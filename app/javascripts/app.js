@@ -19,7 +19,47 @@ window.App = {
     // Bootstrap the MetaCoin abstraction for Use.
     EcommerceStore.setProvider(web3.currentProvider)
     renderStore()
+
+    $('#add-item-to-store').submit((event) => {
+      event.preventDefault()
+
+      const request = $('#add-item-to-store').serialize()
+      const jsonData = `{ "${request.replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"')}" }`
+      console.log(jsonData)
+      const params = JSON.parse(jsonData)
+
+      const decodedParams = {}
+      Object.keys(params).forEach((key) => {
+        decodedParams[key] = decodeURIComponent(decodeURI(params[key]))
+      })
+
+      // console.log('params:', params);
+      console.log(decodedParams);
+      saveProduct(decodedParams)
+    })
   }
+}
+
+function saveProduct (product) {
+  EcommerceStore.deployed()
+    .then((f) => {
+      return f.addProductToStore(
+        product['product-name'],
+        product['product-category'],
+        'imageLink',
+        'descLink',
+        Date.parse(product['product-start-time']) / 1000,
+        web3.toWei(product['product-price'], 'ether'),
+        product['product-condition'],
+        {
+          from: web3.eth.accounts[0],
+          gas: 4700000,
+        }
+      )
+    })
+    .then((f) => {
+      console.log(`Product "${product['product-name']}" added to store.`)
+    })
 }
 
 function renderStore () {
