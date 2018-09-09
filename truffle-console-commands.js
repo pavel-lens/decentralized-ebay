@@ -29,3 +29,17 @@ EcommerceStore.deployed().then(function (f) { f.getProduct.call(1).then(function
 //   BigNumber { s: 1, e: 18, c: [ 10000 ] },
 //   BigNumber { s: 1, e: 0, c: [ 0 ] },
 //   '0x0000000000000000000000000000000000000000']
+
+// Sample data
+EcommerceStore.deployed().then(function (f) { f.addProductToStore('iPhone 8', 'phones', 'imageLink', 'descLink', 1536007648, web3.toWei(2.2, 'ether'), 0).then(function (f) { console.log(f) }) })
+EcommerceStore.deployed().then(function (f) { f.addProductToStore('iPhone X', 'phones', 'imageLink', 'descLink', 1536007648, web3.toWei(2.5, 'ether'), 0).then(function (f) { console.log(f) }) })
+EcommerceStore.deployed().then(function (f) { f.addProductToStore('Samsung Galaxy S6', 'phones', 'imageLink', 'descLink', 1536007648, web3.toWei(1.3, 'ether'), 0).then(function (f) { console.log(f) }) })
+
+// Buy function
+EcommerceStore.deployed().then(function (f) { f.buy(1, {value: web3.toWei(2.2, 'ether'), from: web3.eth.accounts[1] }).then(function (f) { console.log(f) }) })
+
+// Check balance of the wallet. Default amount was 100 ETH, so it should be lower by product price
+web3.eth.getBalance(web3.eth.accounts[1])
+
+// Call getProduct and check buyer address
+EcommerceStore.deployed().then(function (f) { f.getProduct.call(1).then(function (f) { console.log(f) }) })

@@ -18,7 +18,13 @@ window.App = {
 
     // Bootstrap the MetaCoin abstraction for Use.
     EcommerceStore.setProvider(web3.currentProvider)
-    renderStore()
+
+    if ($('#product-details').length > 0) {
+      const productId = new URLSearchParams(window.location.search).get('id')
+      renderProductDetails(productId)
+    } else {
+      renderStore()
+    }
 
     $('#add-item-to-store').submit((event) => {
       event.preventDefault()
@@ -36,6 +42,28 @@ window.App = {
       // console.log('params:', params);
       console.log(decodedParams);
       saveProduct(decodedParams)
+    })
+
+    $('#buy-now').submit((event) => {
+      event.preventDefault()
+
+      $('#msg').hide()
+
+      const sendAmount = $('#buy-now-price').val()
+      const productId = $('#product-id').val()
+
+      console.log(`Buying productId ${productId} for ${sendAmount}`);
+
+      EcommerceStore.deployed()
+        .then((f) => {
+          f.buy(productId, {
+            value: web3.toWei(sendAmount),
+            from: web3.eth.accounts[0],
+            gas: 440000
+          })
+        }).then(() => {
+          $('#msg').html(`Product was successfully purchased.`).show()
+        })
     })
   }
 }
@@ -62,6 +90,20 @@ function saveProduct (product) {
     })
 }
 
+function renderProductDetails(productId) {
+  console.log('renderProductDetails::productId', productId);
+
+  EcommerceStore.deployed()
+    .then((f) => {
+      f.getProduct.call(productId).then((product) => {
+        $('#product-name').html(product[1])
+        $('#product-price').html(displayPrice(product[6]))
+        $('#product-id').val(product[0])
+        $('#buy-now-price').val(web3.fromWei(product[6], 'ether'))
+      })
+    })
+}
+
 function renderStore () {
   var instance
   EcommerceStore.deployed()
@@ -76,13 +118,14 @@ function renderStore () {
     })
 }
 
-function renderProduct (instance, proudctId) {
-  instance.getProduct.call(proudctId).then((product) => {
+function renderProduct (instance, productId) {
+  instance.getProduct.call(productId).then((product) => {
     const node = $('<div />')
     console.log(product);
     node.addClass('col-sm-3 text-center col-margin-bottom-1 product')
     node.append(`<div class="title">${product[1]}</div>`)
     node.append(`<div class="">${displayPrice(product[6])}</div>`)
+    node.append(`<a href="product.html?id=${product[0]}">Detail</a>`)
 
     // Check if product was bought already
     if (product[8] === '0x0000000000000000000000000000000000000000') {
